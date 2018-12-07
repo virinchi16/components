@@ -1,23 +1,29 @@
 import React from 'react';
-import { StyleSheet, Text, View,TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View,TouchableOpacity,Image } from 'react-native';
 
 
 export default class App extends React.Component {
   constructor(props){
     super(props)
+    this.state = {menuBarWidth : "100%"}
   }
   sampleFun = () =>{
     alert("smaple")
   }
-  render() {
+
+  menuClose = () =>{
+    this.setState({menuBarWidth:0})    
+  }
+  menuOpen = () =>{
+    this.setState({menuBarWidth:"100%"})
+  }
+  render(){
     return (
       <View style={styles.container}>
-        <Button 
-        value="Button"
-        paddingBottom = "10"
-        callBack={this.sampleFun} />
-        <TextLabel
-        value="Text label" />
+        <MenuBar
+          menuBarWidth={this.state.menuBarWidth}
+          menuCloseCallBack={this.menuClose} 
+          menuCallback={this.menuOpen}/>
        </View>
     );
   }
@@ -119,6 +125,138 @@ class TextLabel extends React.Component{
   }
 }
 
+const menuIcon = require('./assets/images/menu.png')
+class MenuBar extends React.Component{
+  constructor(props){
+    super(props);
+    this.props = props;
+    this.menuBarStyle = {
+      height:"100%",
+      width:"80%",
+      left:0,
+      paddingTop:20,
+      backgroundColor:"white",
+      borderColor:"black",
+      borderRightWidth:0.5,
+      shadowColor: "black",
+      shadowOffset: {width:10, height:10},
+      shadowOpacity: 1.0
+    }
+    this.profileStyle={
+      width:"100%",
+      height:"40%",
+      backgroundColor:"black"
+    }
+    this.copyStyle = {
+      width:"100%",
+      height:"10%",
+      borderColor:"black",
+      borderTopWidth:1.0
+    }
+    this.optionListStyle ={
+      width:"100%",
+      height:"50%"
+    }
+    this.menuBarOptionStyle = {
+      color: "Black",
+      fontSize: 22,
+      // alignItems: 'center',
+    }
+    this.menuBarOptionButtonStyle={
+      height: 40,
+      marginTop: 3,
+      marginBottom: 2,
+      paddingLeft:10,
+    }
+
+    this.backPressOverlay={
+      backgroundColor:"rgba(1,1,1,0.4)",
+      width:"20%",
+      height:"100%",
+      position:"absolute",
+      right:0
+    }
+    this.menuBackOverlayFunction={
+      width:"100%",
+      height:"100%"
+    }
+    this.menuBarButtonStyle = {width:0, height:0}
+    this.menuBarFunctionStyle = {width:this.props.menuBarWidth, height:"100%"}
+    this.menuOptions = this.props.items?this.props.items.split(','):"option1,option2".split(',');
+    this.sampleLinks = {}
+    if(!this.props.menuOptionClicks){
+      this.menuOptions.forEach(element => {
+        this.sampleLinks[element] = this.sampleMenuClick
+      });
+    }
+    this.menuOptionClick = this.props.menuClicks?this.props.menuOptionClicks:this.sampleLinks;
+    this.menuOptionArr = []
+    this.menuOptions.forEach(element => {
+      data = {
+        callBack:this.menuOptionClick[element],
+        value:element
+      }
+      this.menuOptionArr.push(this.menuOptionCreator(data))
+    });
+  }
+
+  sampleMenuClick = () =>{
+    alert('menu Item Clicked, add click function by passing it to menuOptionClick')
+  }
+  showHideMenu = () =>{
+    this.menuBarFunctionStyle = {
+                                  width:this.props.menuBarWidth, 
+                                  height:"100%"
+                                }
+    if(this.props.menuBarWidth == "100%"){
+      this.menuBarButtonStyle = {width:0, height:0}
+    }
+    else{
+      this.menuBarButtonStyle = {
+        width:30,
+        height:30,
+        marginTop:100,
+        marginLeft:10
+      }
+    }
+  }
+  
+  menuOptionCreator = (data) =>{
+    return(
+      <TouchableOpacity onPress={data.callBack}>
+        <View style={this.menuBarOptionButtonStyle}>
+            <Text style={this.menuBarOptionStyle}>{data.value}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+
+  render(){
+    this.showHideMenu()
+    return (
+      <View style={{width:"100%", height:"auto"}}>
+        <TouchableOpacity onPress={this.props.menuCallback}>
+        <Image  style={this.menuBarButtonStyle} source={menuIcon}></Image>
+        </TouchableOpacity>
+        <View style={this.menuBarFunctionStyle}>
+          <View style={this.menuBarStyle}>
+            <View style={this.profileStyle}>
+            </View>
+           <View style={this.optionListStyle}>
+            {this.menuOptionArr}
+           </View>
+           <View style={this.copyStyle}>
+           </View>
+          </View>
+          <View style={this.backPressOverlay}>
+            <TouchableOpacity style={this.menuBackOverlayFunction} onPress={this.props.menuCloseCallBack}>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      );
+  }
+}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
